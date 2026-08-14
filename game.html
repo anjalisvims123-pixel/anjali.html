@@ -1,0 +1,213 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Flash Card Game</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      margin: 0;
+      padding: 30px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #score {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .game {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      perspective: 600px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transition: transform 0.5s;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      backface-visibility: hidden;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-front {
+      background: #3498db;
+      color: white;
+    }
+
+    .card-back {
+      background: white;
+      transform: rotateY(180deg);
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #3498db;
+      color: white;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Memory Game</h1>
+  <div id="score">Moves: 0</div>
+
+  <div class="game" id="game"></div>
+
+  <button onclick="startGame()">Restart Game</button>
+
+  <script>
+    const symbols = [
+      "🍎", "🍎",
+      "🍌", "🍌",
+      "🍇", "🍇",
+      "🍉", "🍉",
+      "🍓", "🍓",
+      "🍒", "🍒",
+      "🥝", "🥝",
+      "🍍", "🍍"
+    ];
+
+    let firstCard = null;
+    let secondCard = null;
+    let locked = false;
+    let moves = 0;
+    let matches = 0;
+
+    const game = document.getElementById("game");
+    const score = document.getElementById("score");
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      game.innerHTML = "";
+      moves = 0;
+      matches = 0;
+      firstCard = null;
+      secondCard = null;
+      locked = false;
+
+      score.textContent = "Moves: 0";
+
+      shuffle([...symbols]).forEach(symbol => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-front">?</div>
+            <div class="card-back">${symbol}</div>
+          </div>
+        `;
+
+        card.dataset.symbol = symbol;
+        card.addEventListener("click", flipCard);
+
+        game.appendChild(card);
+      });
+    }
+
+    function flipCard() {
+      if (locked) return;
+      if (this === firstCard) return;
+      if (this.classList.contains("matched")) return;
+
+      this.classList.add("flipped");
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      moves++;
+
+      score.textContent = "Moves: " + moves;
+
+      checkMatch();
+    }
+
+    function checkMatch() {
+      if (firstCard.dataset.symbol === secondCard.dataset.symbol) {
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+
+        matches++;
+
+        resetTurn();
+
+        if (matches === symbols.length / 2) {
+          setTimeout(() => {
+            alert("You won in " + moves + " moves!");
+          }, 300);
+        }
+      } else {
+        locked = true;
+
+        setTimeout(() => {
+          firstCard.classList.remove("flipped");
+          secondCard.classList.remove("flipped");
+
+          resetTurn();
+        }, 1000);
+      }
+    }
+
+    function resetTurn() {
+      firstCard = null;
+      secondCard = null;
+      locked = false;
+    }
+
+    startGame();
+  </script>
+
+</body>
+</html>
+```
